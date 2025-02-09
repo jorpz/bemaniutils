@@ -118,8 +118,8 @@ class PopnMusicUnilab(PopnMusicModernBase):
                         44: "Sword of Vengeance",
                         45: "Caldwell 99",
                         46: "満漢全席火花ノ舞",
-                        47: "mathematical good-bye / Hexer",
-                        48: "F/S",
+                        47: "mathematical good-bye → Hexer → F/S",
+                        48: "Ended",
                     },
                 },
                 {
@@ -200,6 +200,19 @@ class PopnMusicUnilab(PopnMusicModernBase):
                         2: "Ended",
                     },
                 },
+                {
+                    # KAC 2023
+                    "name": "KAC Lab Phase",
+                    "tip": "KAC Lab for all players",
+                    "category": "game_config",
+                    "setting": "kac_2023",
+                    "values": {
+                        0: "Not Started",
+                        1: "Caldwell 99 (KAC Woman/Free Set A)",
+                        3: "Hexer / mathematical good-bye (KAC Woman/Free Set B)",
+                        4: "Ended",
+                    },
+                },
                 # We don't currently support lobbies or anything, so this is commented out until
                 # somebody gets around to implementing it.
                 # {
@@ -228,6 +241,25 @@ class PopnMusicUnilab(PopnMusicModernBase):
                     "category": "game_config",
                     "setting": "force_unlock_deco",
                 },
+                {
+                    "name": "Unlock KAC Qualifier (パーフェクトイーター)",
+                    "tip": "Force unlock Perfect Eater for all players.",
+                    "category": "game_config",
+                    "setting": "force_unlock_perfect_eater",
+                },
+                {
+                    # Overly complicated event where you'd play songs from other games to unlock them in other games.
+                    # Unlocks the following songs after one play when set:
+                    # 2045 - 鴉
+                    # 2046 - 蒼氷のフラグメント
+                    # 2047 - Indigo Nocturne
+                    # 2048 - 輪廻の鴉
+                    # 2049 - VOLAQUAS
+                    "name": "Unlock いちかのごちゃまぜMix UP！ Songs",
+                    "tip": "Force unlock Ichika no Gochamaze Mix UP! songs for all players.",
+                    "category": "game_config",
+                    "setting": "force_unlock_ichika",
+                },
             ],
         }
 
@@ -240,6 +272,7 @@ class PopnMusicUnilab(PopnMusicModernBase):
         cancan_boost = game_config.get_int("cancan_boost")
         kakusei_phase = game_config.get_int("kakusei_phase")
         popn_quest_lively_2 = game_config.get_int("popn_quest_lively_2")
+        kac_2023 = game_config.get_int("kac_2023")
         # Enable event and mark complete
         if game_config.get_bool("force_unlock_deco"):
             kakusei_phase = 1
@@ -275,8 +308,14 @@ class PopnMusicUnilab(PopnMusicModernBase):
                 # 5 - 2017 - virkatoの主題によるperson09風超絶技巧変奏曲 upper
                 # 6 - Event Ended
                 1: popn_quest_lively_2,
-                # Unknown event (0-4)
-                2: 4,
+                # KAC 2023 (0-4) - Please see the site below for what songs are in set A and set B
+                # https://bemaniwiki.com/?%B8%F8%BC%B0%C2%E7%B2%F1/KONAMI+Arcade+Championship%282023%29/%CD%BD%C1%AA%A5%E9%A5%A6%A5%F3%A5%C9#popn
+                # 0 - Disabled
+                # 1 - Caldwell 99 (KAC Woman/Free Set A)
+                # 2 - Disabled
+                # 3 - Hexer / mathematical good-bye (KAC Woman/Free Set B)
+                # 4 - Disabled
+                2: kac_2023,
                 # Enable Net Taisen, including win/loss display on song select (0-2)
                 # 0 - Disable
                 # 1 - Net taisen
@@ -336,18 +375,18 @@ class PopnMusicUnilab(PopnMusicModernBase):
                 # 38 - 2117 - めうめうぺったんたん！！ upper - 5000 points
                 #      2116 - 革命パッショネイト upper - 5000 points
                 # 39 - 2118 - Gabbalungang
-                # 40 - 2120 - Caldwell 99 - KAC Lab qualifier(?)
+                # 40 - 2120 - Caldwell 99 - 13000 points
                 # 41 - 2065 - 葬送のエウロパ
                 #      2064 - ただ、それだけの理由で
                 # 42 - 2121 - ISERBROOK
                 # 43 - 2122 - Amulet of Enbarr
                 # 44 - 2123 - Sword of Vengeance
-                # 45 - 2120 - Caldwell 99 (KAC version) - 13000 points
+                # 45 - 2120 - Caldwell 99 (set B) - 13000 points
                 # 46 - 2124 - 満漢全席火花ノ舞
                 # 47 - 2126 - mathematical good-bye - 13000 points
                 #      2125 - Hexer - 13000 points
-                #      Clearing the limited time event 47 should unlock:
-                # 48 - 2127 - F/S - 14000
+                #      2127 - F/S - 14000
+                # 48 - Ended
                 5: narunaru_phase,
                 # Super Unilab BOOST! (0-2)
                 # Boost should be 120, 150, or 200, bemaniwiki has the explanation and it's based on the unlocks left to do
@@ -638,5 +677,36 @@ class PopnMusicUnilab(PopnMusicModernBase):
                             "is_cleared": is_cleared,
                         },
                     )
+
+        # Unlock 2119 - Perfect Eater, KAC Qualifier song after one play. Opens KAC Lab.
+        if game_config.get_bool("force_unlock_perfect_eater"):
+            self.data.local.user.put_achievement(
+                self.game,
+                self.version,
+                userid,
+                2119,
+                "item_0",
+                {
+                    "param": 0,
+                    "is_new": False,
+                    "get_time": 0,
+                },
+            )
+
+        # Unlock Ichika no gochamaze Mix UP! songs after one play.
+        if game_config.get_bool("force_unlock_ichika"):
+            for songid in range(2045, 2050):  # song IDs 2045 to 2049
+                self.data.local.user.put_achievement(
+                    self.game,
+                    self.version,
+                    userid,
+                    songid,
+                    "item_0",
+                    {
+                        "param": 0,
+                        "is_new": False,
+                        "get_time": 0,
+                    },
+                )
 
         return newprofile
